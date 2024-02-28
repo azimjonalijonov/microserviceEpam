@@ -1,0 +1,6 @@
+rootProject.name = 'microserviceEpam'
+include 'mainService'
+include 'eurika-service'
+include 'trainer-summary-service'
+include 'main-servic'
+
