@@ -30,6 +30,7 @@ public class TrainingService {
 	private final JwtService jwtService;
 
 	private final RestTemplate restTemplate;
+	static String apiUrl = "http://localhost:9090/api/post";
 
 	private final TrainingErrorValidator trainingErrorValidator;
 
@@ -56,7 +57,8 @@ public class TrainingService {
 		return training;
 	}
 
-	public HttpEntity<RequestDTO> prepareRequest(Training training, Boolean bool, String method) {
+	@CircuitBreaker(name = "serviceA", fallbackMethod = "fallback")
+	public ResponseEntity createTrainerSummary(Training training, Boolean bool, String method) {
 		String jwt = jwtService.generateToken2(null);
 		RequestDTO requestDTO = new RequestDTO();
 		requestDTO.setUsername(training.getTrainer().getUser().getUsername());
@@ -73,13 +75,13 @@ public class TrainingService {
 
 		HttpEntity<RequestDTO> requestEntity = new HttpEntity<>(requestDTO, headers);
 
-		return requestEntity;
-	}
-
-	@CircuitBreaker(name = "serviceA", fallbackMethod = "fallback")
-	public ResponseEntity sendRequest(String apiUrl, HttpEntity<RequestDTO> requestEntity) {
 		return restTemplate.postForEntity(apiUrl, requestEntity, String.class);
 	}
+
+	// public ResponseEntity sendRequest(String apiUrl, HttpEntity<RequestDTO>
+	// requestEntity) {
+	// return restTemplate.postForEntity(apiUrl, requestEntity, String.class);
+	// }
 
 	public Training update(Training updateRequest) {
 		if (trainingErrorValidator.isValidParamsForUpdate(updateRequest)) {

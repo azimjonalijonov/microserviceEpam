@@ -44,13 +44,13 @@ public class TrainingController {
 		this.trainerTraineeService = trainerTraineeService;
 	}
 
+	//
 	@DeleteMapping("/delete")
 	public void delete(@RequestBody Long id) {
 		Training training = trainingService.readById(id);
-		HttpEntity<RequestDTO> httpEntity = trainingService.prepareRequest(training, false, "delete");
+		trainingService.createTrainerSummary(training, false, "delete");
 
 		trainingService.deleteById(id);
-		trainingService.sendRequest("http://localhost:9090/api/post", httpEntity);
 	}
 
 	@PostMapping("/post")
@@ -72,9 +72,8 @@ public class TrainingController {
 		training.setDuration(postTraining.getDuration());
 		training.setTrainingDate(postTraining.getDate());
 		Training training1 = trainingService.create(training);
-		HttpEntity<RequestDTO> httpEntity = trainingService.prepareRequest(training1, true, "post");
+		ResponseEntity message = trainingService.createTrainerSummary(training1, true, "post");
 
-		ResponseEntity message = trainingService.sendRequest("http://localhost:9090/api/post", httpEntity);
 		return ResponseEntity.ok(message);
 
 	}
