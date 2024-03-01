@@ -33,8 +33,8 @@ public class SecurityConfiguration {
 		return new CorsFilter(source);
 	}
 
-	private static final String[] WHITE_LIST_URL = { "api/trainee/post", "api/trainer/post", "api/login", "api/**",
-			"actuator/**" };
+	private static final String[] WHITE_LIST_URL = { "/**", "api/trainee/post", "api/trainer/post", "api/login",
+			"api/**", "actuator/health", "actuator/**" };
 
 	private final JwtAuthenticationFilter jwtAuthFilter;
 
@@ -45,7 +45,7 @@ public class SecurityConfiguration {
 		http.csrf(AbstractHttpConfigurer::disable)
 			.authorizeHttpRequests(req -> req.requestMatchers(WHITE_LIST_URL)
 				.permitAll()
-				.requestMatchers("/api/**")
+				.requestMatchers("/api/**", "/actuator/health")
 				.hasAnyRole("TRAINER", "TRAINEE")
 
 			)

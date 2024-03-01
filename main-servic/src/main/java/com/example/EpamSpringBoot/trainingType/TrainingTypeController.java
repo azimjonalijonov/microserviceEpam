@@ -28,7 +28,7 @@ public class TrainingTypeController {
 	}
 
 	@GetMapping("/get")
-	public ResponseEntity get() {
+	public ResponseEntity<?> get() {
 		List<TrainingType> trainingTypeList = trainingTypeService.readAll();
 		return ResponseEntity.ok(trainingTypeList);
 

@@ -1,17 +1,33 @@
-package org.example;
+package org.example.entity;
 
-import org.springframework.http.HttpMethod;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-public class RequestDTO {
+@Entity
+
+public class TrainerSummaryEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String username;
     private String firstname;
     private String lastname;
     private Boolean isActive;
     private LocalDateTime DATE;
     private Number duration;
+
+    public Number getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Number duration) {
+        this.duration = duration;
+    }
 
     public String getUsername() {
         return username;
@@ -53,21 +69,11 @@ public class RequestDTO {
         this.DATE = DATE;
     }
 
-    public Number getDuration() {
-        return duration;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public void setDuration(Number duration) {
-        this.duration = duration;
+    public Long getId() {
+        return id;
     }
-
-    public String getMethod() {
-        return method;
-    }
-
-    public void setMethod(String method) {
-        this.method = method;
-    }
-
-    private String method;
 }

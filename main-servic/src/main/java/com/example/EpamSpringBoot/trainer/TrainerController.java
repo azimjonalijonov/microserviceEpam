@@ -84,7 +84,9 @@ public class TrainerController {
 			throw new RuntimeException("wrong password");
 		}
 		String response = trainerService.readByUsername(username).toString();
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		Map<String, String> map = new HashMap<>();
+		map.put("success", response);
+		return new ResponseEntity<>(map, HttpStatus.OK);
 	}
 
 	@PutMapping("/update")
@@ -135,7 +137,11 @@ public class TrainerController {
 		}
 		Long id = trainerService.readByUsername(username).getId();
 		trainerService.changeActivation(bool, id);
-		return ResponseEntity.ok("");
+		Map<String, String> map = new HashMap<>();
+
+		map.put("message", "successful");
+
+		return ResponseEntity.ok(map);
 	}
 
 }

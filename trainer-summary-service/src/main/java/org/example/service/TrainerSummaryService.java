@@ -1,5 +1,10 @@
-package org.example;
+package org.example.service;
 
+import org.example.repository.TrainerSummaryRepository;
+import org.example.dto.PartialDTO;
+import org.example.dto.RequestDTO;
+import org.example.dto.ResponseDto;
+import org.example.entity.TrainerSummaryEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.Month;
@@ -46,7 +51,7 @@ public class TrainerSummaryService {
                 System.out.println(Month.MAY);
                 for (PartialDTO partialDTO : responseDto.getMap().get(year)) {
                     if (partialDTO.getMonth().equals(month)) {
-                        partialDTO.setSummaryDuration(trainerSummaryEntity.getDuration().doubleValue() + partialDTO.summaryDuration.doubleValue());
+                        partialDTO.setSummaryDuration(trainerSummaryEntity.getDuration().doubleValue() + partialDTO.getSummaryDuration().doubleValue());
                     }
                 }
             } else {

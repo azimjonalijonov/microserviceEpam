@@ -3,32 +3,39 @@ package com.example.EpamSpringBoot.training;
 import com.example.EpamSpringBoot.config.jwt.JwtService;
 import com.example.EpamSpringBoot.training.dto.RequestDTO;
 import com.example.EpamSpringBoot.util.validation.impl.TrainingErrorValidator;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
+@Slf4j
 public class TrainingService {
+
+	private final CircuitBreakerRegistry circuitBreakerRegistry;
 
 	private final TrainingRepository trainingRepository;
 
 	private final JwtService jwtService;
 
-	public static final String USER_SERVICE = "trainer-service";
-
 	private final RestTemplate restTemplate;
 
 	private final TrainingErrorValidator trainingErrorValidator;
 
-	public TrainingService(TrainingRepository trainingRepository, JwtService jwtService, RestTemplate restTemplate,
-			TrainingErrorValidator trainingErrorValidator) {
+	public TrainingService(CircuitBreakerRegistry circuitBreakerRegistry, TrainingRepository trainingRepository,
+			JwtService jwtService, RestTemplate restTemplate, TrainingErrorValidator trainingErrorValidator) {
+		this.circuitBreakerRegistry = circuitBreakerRegistry;
 		this.trainingRepository = trainingRepository;
 		this.jwtService = jwtService;
 		this.restTemplate = restTemplate;
@@ -45,16 +52,11 @@ public class TrainingService {
 	}
 
 	public Training create(Training createRequest) {
-		// if (trainingErrorValidator.isValidParamsForCreate(createRequest)) {
-
 		Training training = trainingRepository.save(createRequest);
-		System.out.println(training.getTrainer().toString());
-		sendToTrainerService(training, true, "post");
 		return training;
-
 	}
 
-	public void sendToTrainerService(Training training, Boolean bool, String method) {
+	public HttpEntity<RequestDTO> prepareRequest(Training training, Boolean bool, String method) {
 		String jwt = jwtService.generateToken2(null);
 		RequestDTO requestDTO = new RequestDTO();
 		requestDTO.setUsername(training.getTrainer().getUser().getUsername());
@@ -64,7 +66,6 @@ public class TrainingService {
 		requestDTO.setActive(bool);
 		requestDTO.setDuration(training.getDuration());
 		requestDTO.setMethod(method);
-		String apiUrl = "http://localhost:9090/api/post";
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
@@ -72,16 +73,12 @@ public class TrainingService {
 
 		HttpEntity<RequestDTO> requestEntity = new HttpEntity<>(requestDTO, headers);
 
-		RestTemplate restTemplate = new RestTemplate();
-		ResponseEntity<String> responseEntity = restTemplate.postForEntity(apiUrl, requestEntity, String.class);
+		return requestEntity;
+	}
 
-		if (responseEntity.getStatusCode().is2xxSuccessful()) {
-			System.out.println("POST request successful!");
-		}
-		else {
-			System.err.println("POST request failed with status code: " + responseEntity.getStatusCodeValue());
-		}
-
+	@CircuitBreaker(name = "serviceA", fallbackMethod = "fallback")
+	public ResponseEntity sendRequest(String apiUrl, HttpEntity<RequestDTO> requestEntity) {
+		return restTemplate.postForEntity(apiUrl, requestEntity, String.class);
 	}
 
 	public Training update(Training updateRequest) {
@@ -93,15 +90,16 @@ public class TrainingService {
 	}
 
 	public void deleteById(Long id) {
-		Training training = trainingRepository.getById(id);
 		trainingRepository.deleteById(id);
-		sendToTrainerService(training, true, "delete");
 
 	}
 
-	// public Training addTraining(Training training) {
-	// return trainingDAO.createOrUpdate(training);
-	//
-	// }
+	public ResponseEntity fallback(Throwable throwable) {
+		Map<String, String> map = new HashMap<>();
+		map.put("message", "secondservice issue");
+		return new ResponseEntity<>(map, HttpStatus.SERVICE_UNAVAILABLE);
+	}
+
+	;
 
 }

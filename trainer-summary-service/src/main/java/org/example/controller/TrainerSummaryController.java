@@ -1,5 +1,7 @@
-package org.example;
+package org.example.controller;
 
+import org.example.service.TrainerSummaryService;
+import org.example.dto.RequestDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,7 +22,7 @@ public class TrainerSummaryController {
     @PostMapping("/post")
     public ResponseEntity<?> post(@RequestBody RequestDTO requestDTO) {
         trainerSummaryService.save(requestDTO);
-        return ResponseEntity.ok("");
+        return ResponseEntity.ok("Sucessfully submiitted to second service");
 
     }
 

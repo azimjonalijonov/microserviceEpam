@@ -88,7 +88,7 @@ public class TraineeController {
 	}
 
 	@PutMapping("/update")
-	public ResponseEntity update(@RequestParam String username, String password,
+	public ResponseEntity<?> update(@RequestParam String username, String password,
 			@RequestBody UpdateTraineeDTO updateTraineeDTO) {
 		if (userService.readByUsername(username) == null) {
 			throw new RuntimeException("user does not exist");
@@ -117,13 +117,12 @@ public class TraineeController {
 			trainee.setAddress(updateTraineeDTO.getAddress());
 		}
 		traineeService.update(trainee);
-		String response = updateTraineeDTO.toString();
+		UpdateTraineeDTO response = updateTraineeDTO;
 		List<Trainer> trainers = new ArrayList<>();
 		for (Training training : traineeService.getTraineeTrainingList(updateTraineeDTO.getUsername(), 1)) {
 			trainers.add(training.getTrainer());
 		}
-		response = response + "trainers list: " + trainers;
-		return ResponseEntity.ok(response);
+		return ResponseEntity.ok(updateTraineeDTO);
 	}
 
 	@DeleteMapping("/delete")
@@ -181,7 +180,7 @@ public class TraineeController {
 	}
 
 	@PatchMapping("/activateDeacivate")
-	public ResponseEntity changeStatus(@RequestParam String username, String password, Boolean bool) {
+	public ResponseEntity<?> changeStatus(@RequestParam String username, String password, Boolean bool) {
 		if (userService.readByUsername(username) == null) {
 			throw new RuntimeException("user does not exist");
 		}
@@ -191,7 +190,9 @@ public class TraineeController {
 		}
 		Long id = traineeService.readByUsername(username).getId();
 		traineeService.changeActivation(bool, id);
-		return ResponseEntity.ok("");
+		Map<String, String> map = new HashMap<>();
+		map.put("message", "successful");
+		return ResponseEntity.ok(map);
 	}
 
 }

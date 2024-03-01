@@ -1,6 +1,9 @@
 package com.example.EpamSpringBoot.config;
 
 import com.example.EpamSpringBoot.user.UserRepository;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.common.circuitbreaker.configuration.CircuitBreakerConfigCustomizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +18,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.RestTemplate;
+
+import java.time.Duration;
+import java.util.Map;
+
+import static io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.SlidingWindowType.COUNT_BASED;
 
 @Configuration
 @RequiredArgsConstructor

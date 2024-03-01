@@ -1,8 +1,8 @@
-package org.example;
+package org.example.config;
 
+import org.example.config.jwt.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -36,7 +36,7 @@ public class SecurityConfiguration {
         return new CorsFilter(source);
     }
 
-    static final String[] WHITE_LIST_URL = {"api/**"};
+   public  static final String[] WHITE_LIST_URL = {"api/**"};
 
     private final JwtAuthenticationFilter jwtAuthFilter;
 

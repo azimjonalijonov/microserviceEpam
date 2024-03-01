@@ -6,11 +6,13 @@ import com.example.EpamSpringBoot.traineeTrainers.TraineeTrainerService;
 import com.example.EpamSpringBoot.trainer.Trainer;
 import com.example.EpamSpringBoot.trainer.TrainerService;
 import com.example.EpamSpringBoot.training.dto.PostTrainingDTO;
+import com.example.EpamSpringBoot.training.dto.RequestDTO;
 import com.example.EpamSpringBoot.user.User;
 import com.example.EpamSpringBoot.user.UserService;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,8 +20,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-@Slf4j
 
 @RestController
 @RequestMapping("/api/training")
@@ -46,16 +46,17 @@ public class TrainingController {
 
 	@DeleteMapping("/delete")
 	public void delete(@RequestBody Long id) {
+		Training training = trainingService.readById(id);
+		HttpEntity<RequestDTO> httpEntity = trainingService.prepareRequest(training, false, "delete");
+
 		trainingService.deleteById(id);
+		trainingService.sendRequest("http://localhost:9090/api/post", httpEntity);
 	}
 
 	@PostMapping("/post")
-	@CircuitBreaker(name = "randomActivity", fallbackMethod = "fallbackRandomActivity")
-
 	public ResponseEntity post(@RequestParam String username, String password,
 			@RequestBody PostTrainingDTO postTraining) {
 
-		System.out.println("inside");
 		if (postTraining.getTrainerUsername() == null || postTraining.getTraineeUsername() == null
 				|| postTraining.getDuration() == null || postTraining.getDate() == null
 				|| postTraining.getName() == null) {
@@ -70,13 +71,12 @@ public class TrainingController {
 		training.setTrainee(trainee);
 		training.setDuration(postTraining.getDuration());
 		training.setTrainingDate(postTraining.getDate());
-		trainingService.create(training);
-		return ResponseEntity.ok(training.toString());
+		Training training1 = trainingService.create(training);
+		HttpEntity<RequestDTO> httpEntity = trainingService.prepareRequest(training1, true, "post");
 
-	}
+		ResponseEntity message = trainingService.sendRequest("http://localhost:9090/api/post", httpEntity);
+		return ResponseEntity.ok(message);
 
-	ResponseEntity fallbackRandomActivity(String st, String sttr, PostTrainingDTO dto, Throwable th) {
-		return ResponseEntity.ok("from circuitbreaker");
 	}
 
 }

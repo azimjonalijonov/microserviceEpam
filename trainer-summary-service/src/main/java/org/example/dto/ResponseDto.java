@@ -1,6 +1,7 @@
-package org.example;
+package org.example.dto;
 
-import java.time.LocalDateTime;
+import org.example.dto.PartialDTO;
+
 import java.util.List;
 import java.util.Map;
 

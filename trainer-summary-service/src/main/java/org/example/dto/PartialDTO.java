@@ -1,4 +1,4 @@
-package org.example;
+package org.example.dto;
 
 import java.time.Month;
 import java.util.Map;
