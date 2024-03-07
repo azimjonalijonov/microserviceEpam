@@ -63,7 +63,7 @@ class TrainingControllerTest {
 		Trainer mockTrainer = new Trainer();
 		when(trainerService.readByUsername(postTrainingDTO.getTrainerUsername())).thenReturn(mockTrainer);
 
-		ResponseEntity responseEntity = trainingController.post(username, password, postTrainingDTO);
+		ResponseEntity responseEntity = trainingController.post( postTrainingDTO);
 
 		assertNotNull(responseEntity);
 		assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
