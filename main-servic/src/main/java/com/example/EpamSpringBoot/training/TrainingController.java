@@ -72,7 +72,7 @@ public class TrainingController {
 		training.setDuration(postTraining.getDuration());
 		training.setTrainingDate(postTraining.getDate());
 		Training training1 = trainingService.create(training);
-		ResponseEntity message = trainingService.createTrainerSummary(training1, true, "post");
+		ResponseEntity message = trainingService.createTrainerSummary2(training1, true, "post");
 
 		return ResponseEntity.ok(message);
 

@@ -2,10 +2,11 @@ package com.example.EpamSpringBoot.training.dto;
 
 import org.springframework.http.HttpMethod;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-public class RequestDTO {
+public class RequestDTO implements Serializable {
 
 	private String username;
 

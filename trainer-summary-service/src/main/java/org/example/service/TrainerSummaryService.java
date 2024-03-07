@@ -1,13 +1,17 @@
 package org.example.service;
 
+import org.example.config.jwt.JwtService;
 import org.example.repository.TrainerSummaryRepository;
 import org.example.dto.PartialDTO;
 import org.example.dto.RequestDTO;
 import org.example.dto.ResponseDto;
 import org.example.entity.TrainerSummaryEntity;
+import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.time.Month;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,10 +19,29 @@ import java.util.Map;
 
 @Service
 public class TrainerSummaryService {
+    private final JwtService jwtService;
     private final TrainerSummaryRepository trainerSummaryRepository;
 
-    public TrainerSummaryService(TrainerSummaryRepository trainerSummaryRepository) {
+    public TrainerSummaryService(JwtService jwtService, TrainerSummaryRepository trainerSummaryRepository) {
+        this.jwtService = jwtService;
         this.trainerSummaryRepository = trainerSummaryRepository;
+    }
+
+    @JmsListener(destination = "dest")
+
+    public void listener(Map<String, String> map) {
+        TrainerSummaryEntity trainerSummaryEntity = new TrainerSummaryEntity();
+        trainerSummaryEntity.setUsername((String) map.get("username"));
+        trainerSummaryEntity.setFirstname((String) map.get("firstname"));
+        trainerSummaryEntity.setLastname((String) map.get("lastname"));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
+        // Parse the string to LocalDateTime
+        LocalDateTime dateTime = LocalDateTime.parse(map.get("date"), formatter);
+        trainerSummaryEntity.setDATE(dateTime);
+        trainerSummaryEntity.setActive(Boolean.valueOf(map.get("active")));
+        trainerSummaryEntity.setDuration((Integer.valueOf(map.get("duration"))));
+
+        trainerSummaryRepository.save(trainerSummaryEntity);
     }
 
     public void save(RequestDTO requestDTO) {
