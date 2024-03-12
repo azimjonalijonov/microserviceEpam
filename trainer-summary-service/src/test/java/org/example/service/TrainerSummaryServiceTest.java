@@ -1,5 +1,4 @@
 package org.example.service;
-
 import org.example.config.jwt.JwtService;
 import org.example.dto.ResponseDto;
 import org.example.entity.TrainerSummaryEntity;
@@ -10,41 +9,41 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class TrainerSummaryServiceTest {
-
-    @Mock
-    private JwtService jwtService;
+public class TrainerSummaryServiceTest {
 
     @Mock
     private TrainerSummaryRepository trainerSummaryRepository;
+
+    @Mock
+    private JwtService jwtService;
 
     @InjectMocks
     private TrainerSummaryService trainerSummaryService;
 
     @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
+    public void setUp() {
+        MockitoAnnotations.initMocks(this);
     }
 
     @Test
-    void listener_shouldSaveNewTrainerSummary() {
-        Map<String, String> map = Map.of(
-                "username", "testUser",
-                "firstname", "John",
-                "lastname", "Doe",
-                "date", "2023-03-12T10:15:30.123",
-                "active", "true",
-                "duration", "60"
-        );
+    public void testListener_NewTrainerSummary() {
+        Map<String, String> map = new HashMap<>();
+        map.put("username", "testUser");
+        map.put("firstname", "John");
+        map.put("lastname", "Doe");
+        map.put("date", "2024-03-12T12:00:00.000");
+        map.put("duration", "60");
+        map.put("active", "true");
 
-        when(trainerSummaryRepository.findByUsernameAndYearAndMonth(anyString(), anyString(), anyString())).thenReturn(null);
+        when(trainerSummaryRepository.findByUsername(any())).thenReturn(null);
 
         trainerSummaryService.listener(map);
 
@@ -52,30 +51,59 @@ class TrainerSummaryServiceTest {
     }
 
     @Test
-    void get_shouldReturnResponseDto() throws Exception {
-        String username = "testUser";
+    public void testListener_ExistingTrainerSummary() {
+        Map<String, String> map = new HashMap<>();
+        map.put("username", "testUser");
+        map.put("firstname", "John");
+        map.put("lastname", "Doe");
+        map.put("date", "2024-03-12T12:00:00.000");
+        map.put("duration", "60");
+        map.put("active", "true");
 
-        List<TrainerSummaryEntity> mockEntities = new ArrayList<>();
-        TrainerSummaryEntity entity = new TrainerSummaryEntity();
-        entity.setUsername(username);
-        entity.setFirstname("John");
-        entity.setLastname("Doe");
-        entity.setYear("2023");
-        entity.setMonth("MARCH");
-        entity.setActive(true);
-        entity.setDuration(60);
-        mockEntities.add(entity);
+        TrainerSummaryEntity existingSummary = new TrainerSummaryEntity();
+        Map<String, Map<String, Number>> summaryList = new HashMap<>();
+        Map<String, Number> monthMap = new HashMap<>();
+        monthMap.put("MARCH", 30);
+        summaryList.put("2024", monthMap);
+        existingSummary.setSummaryList(summaryList);
+        when(trainerSummaryRepository.findByUsername(any())).thenReturn(existingSummary);
 
-        when(trainerSummaryRepository.findAllByUsername(username)).thenReturn(mockEntities);
+        trainerSummaryService.listener(map);
 
-        ResponseDto responseDto = trainerSummaryService.get(username);
+        verify(trainerSummaryRepository, times(1)).save(any(TrainerSummaryEntity.class));
+    }
 
-        assertEquals(username, responseDto.getUsername());
+    @Test
+    public void testGetExistingTrainerSummary() throws Exception {
+        TrainerSummaryEntity trainerSummaryEntity = new TrainerSummaryEntity();
+        trainerSummaryEntity.setUsername("testUser");
+        trainerSummaryEntity.setFirstname("John");
+        trainerSummaryEntity.setLastname("Doe");
+        trainerSummaryEntity.setActive(true);
+        Map<String, Map<String, Number>> summaryList = new HashMap<>();
+        trainerSummaryEntity.setSummaryList(summaryList);
+
+        when(trainerSummaryRepository.findByUsername(any())).thenReturn(trainerSummaryEntity);
+
+        ResponseDto responseDto = trainerSummaryService.get("testUser");
+
+        assertEquals("testUser", responseDto.getUsername());
         assertEquals("John", responseDto.getFirstname());
         assertEquals("Doe", responseDto.getLastname());
-        assertEquals(1, responseDto.getPartialDTOS().size());
-        assertEquals("2023", responseDto.getPartialDTOS().get(0).getYear());
-        assertEquals("MARCH", responseDto.getPartialDTOS().get(0).getMonth());
-        assertEquals(60, responseDto.getPartialDTOS().get(0).getSummaryDuration());
+        assertEquals(true, responseDto.getTrainerStatus());
+        assertEquals(summaryList, responseDto.getMap());
+
+        verify(trainerSummaryRepository, times(1)).findByUsername("testUser");
+    }
+
+    @Test
+    public void testGetNonExistingTrainerSummary() {
+        when(trainerSummaryRepository.findByUsername(any())).thenReturn(null);
+
+        Exception exception = assertThrows(Exception.class, () -> trainerSummaryService.get("nonExistingUser"));
+
+        assertEquals("no  trainerSummary found for this username", exception.getMessage());
+
+        verify(trainerSummaryRepository, times(1)).findByUsername("nonExistingUser");
     }
 }

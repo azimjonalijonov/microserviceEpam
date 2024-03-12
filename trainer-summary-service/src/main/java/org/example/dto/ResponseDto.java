@@ -40,20 +40,22 @@ public class ResponseDto {
         this.trainerStatus = trainerStatus;
     }
 
-    public List<PartialDTO> getPartialDTOS() {
-        return partialDTOS;
-    }
-
-    public void setPartialDTOS(List<PartialDTO> partialDTOS) {
-        this.partialDTOS = partialDTOS;
-    }
 
     private String firstname;
     private String lastname;
 
     private Boolean trainerStatus = false;
 
-    List<PartialDTO> partialDTOS;
+
+    public Map<String, Map<String, Number>> getMap() {
+        return map;
+    }
+
+    public void setMap(Map<String, Map<String, Number>> map) {
+        this.map = map;
+    }
+
+    Map<String, Map<String, Number>> map;
 
 
 }

@@ -2,21 +2,16 @@ package org.example.service;
 
 import org.example.config.jwt.JwtService;
 import org.example.repository.TrainerSummaryRepository;
-import org.example.dto.PartialDTO;
-import org.example.dto.RequestDTO;
 import org.example.dto.ResponseDto;
 import org.example.entity.TrainerSummaryEntity;
 import org.springframework.jms.annotation.JmsListener;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.Year;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -36,24 +31,36 @@ public class TrainerSummaryService {
         LocalDateTime dateTime = LocalDateTime.parse(map.get("date"), formatter);
         Month month = dateTime.getMonth();
         Year year = Year.of(dateTime.getYear());
-        TrainerSummaryEntity trainerSummaryEntity1 = trainerSummaryRepository.findByUsernameAndYearAndMonth(map.get("username"), year.toString(), month.toString());
+        TrainerSummaryEntity trainerSummaryEntity1 = trainerSummaryRepository.findByUsername(map.get("username"));
         if (trainerSummaryEntity1 == null) {
-
-
             TrainerSummaryEntity trainerSummaryEntity = new TrainerSummaryEntity();
-            trainerSummaryEntity.setUsername((String) map.get("username"));
+            trainerSummaryEntity.setUsername(map.get("username"));
             trainerSummaryEntity.setFirstname((String) map.get("firstname"));
             trainerSummaryEntity.setLastname((String) map.get("lastname"));
-
-            trainerSummaryEntity.setYear(year.toString());
-            trainerSummaryEntity.setMonth(month.toString());
+            Map<String, Map<String, Number>> map1 = new HashMap<>();
+            Map<String, Number> map2 = new HashMap<>();
+            map2.put(month.toString(), (Integer.valueOf(map.get("duration"))));
+            map1.put(year.toString(), map2);
+            trainerSummaryEntity.setSummaryList(map1);
 
             trainerSummaryEntity.setActive(Boolean.valueOf(map.get("active")));
-            trainerSummaryEntity.setDuration((Integer.valueOf(map.get("duration"))));
-
             trainerSummaryRepository.save(trainerSummaryEntity);
         } else {
-            trainerSummaryEntity1.setDuration((Integer.valueOf(map.get("duration"))) + (Integer) trainerSummaryEntity1.getDuration());
+            Map<String, Map<String, Number>> map1 = trainerSummaryEntity1.getSummaryList();
+            if (map1.containsKey(year.toString())) {
+                Map<String, Number> map2 = map1.get(year.toString());
+                if (map2.containsKey(month.toString())) {
+                    map2.put(month.toString(), ((Integer.valueOf(map.get("duration"))) + (Integer) map2.get(month.toString())));
+                } else {
+                    map2.put(month.toString(), (Integer.valueOf(map.get("duration"))));
+
+                }
+            } else {
+                Map<String, Number> map2 = new HashMap<>();
+                map2.put(month.toString(), (Integer.valueOf(map.get("duration"))));
+                map1.put(year.toString(), map2);
+                trainerSummaryEntity1.setSummaryList(map1);
+            }
             trainerSummaryRepository.save(trainerSummaryEntity1);
         }
     }
@@ -61,25 +68,17 @@ public class TrainerSummaryService {
 
     public ResponseDto get(String username) throws Exception {
 
-        List<TrainerSummaryEntity> list = trainerSummaryRepository.findAllByUsername(username);
-        if (list.size() == 0) {
+        TrainerSummaryEntity trainerSummaryEntity = trainerSummaryRepository.findByUsername(username);
+        if (trainerSummaryEntity == null) {
             throw new Exception("no  trainerSummary found for this username");
         }
         ResponseDto responseDto = new ResponseDto();
-        responseDto.setUsername(list.get(0).getUsername());
-        responseDto.setFirstname(list.get(0).getFirstname());
-        responseDto.setLastname(list.get(0).getLastname());
-        responseDto.setTrainerStatus(list.get(0).getActive());
-        List<PartialDTO> list1 = new ArrayList<>();
-        for (TrainerSummaryEntity trainerSummaryEntity : list
-        ) {
-            PartialDTO partialDTO = new PartialDTO();
-            partialDTO.setYear(trainerSummaryEntity.getYear());
-            partialDTO.setMonth(trainerSummaryEntity.getMonth());
-            partialDTO.setSummaryDuration(trainerSummaryEntity.getDuration());
-            list1.add(partialDTO);
-        }
-        responseDto.setPartialDTOS(list1);
+        responseDto.setUsername(trainerSummaryEntity.getUsername());
+        responseDto.setFirstname(trainerSummaryEntity.getFirstname());
+        responseDto.setLastname(trainerSummaryEntity.getLastname());
+        responseDto.setTrainerStatus(trainerSummaryEntity.getActive());
+        Map<String, Map<String, Number>> map = trainerSummaryEntity.getSummaryList();
+        responseDto.setMap(map);
         return responseDto;
     }
 
