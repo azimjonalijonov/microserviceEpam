@@ -1,6 +1,7 @@
 package org.example.service;
 
 import org.example.config.jwt.JwtService;
+import org.example.entity.YearlySummary;
 import org.example.repository.TrainerSummaryRepository;
 import org.example.dto.ResponseDto;
 import org.example.entity.TrainerSummaryEntity;
@@ -25,43 +26,46 @@ public class TrainerSummaryService {
     }
 
     @JmsListener(destination = "dest")
-
-    public void listener(Map<String, String> map) {
+    public void listener(Map<String, String> payloadmap) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
-        LocalDateTime dateTime = LocalDateTime.parse(map.get("date"), formatter);
+        LocalDateTime dateTime = LocalDateTime.parse(payloadmap.get("date"), formatter);
         Month month = dateTime.getMonth();
         Year year = Year.of(dateTime.getYear());
-        TrainerSummaryEntity trainerSummaryEntity1 = trainerSummaryRepository.findByUsername(map.get("username"));
-        if (trainerSummaryEntity1 == null) {
+        TrainerSummaryEntity trainerSummaryEntityExisting = trainerSummaryRepository.findByUsername(payloadmap.get("username"));
+        if (trainerSummaryEntityExisting == null) {
             TrainerSummaryEntity trainerSummaryEntity = new TrainerSummaryEntity();
-            trainerSummaryEntity.setUsername(map.get("username"));
-            trainerSummaryEntity.setFirstname((String) map.get("firstname"));
-            trainerSummaryEntity.setLastname((String) map.get("lastname"));
-            Map<String, Map<String, Number>> map1 = new HashMap<>();
-            Map<String, Number> map2 = new HashMap<>();
-            map2.put(month.toString(), (Integer.valueOf(map.get("duration"))));
-            map1.put(year.toString(), map2);
-            trainerSummaryEntity.setSummaryList(map1);
+            trainerSummaryEntity.setUsername(payloadmap.get("username"));
+            trainerSummaryEntity.setFirstname(payloadmap.get("firstname"));
+            trainerSummaryEntity.setLastname( payloadmap.get("lastname"));
+            Map<String, YearlySummary> allSummary = new HashMap<>();
+            Map<String, Number> monthlySummaryMap = new HashMap<>();
+             monthlySummaryMap.put(month.toString(), (Integer.valueOf(payloadmap.get("duration"))));
+            YearlySummary yearlySummary =new YearlySummary();
+            yearlySummary.setMonthlySummary(monthlySummaryMap);
+            allSummary.put(year.toString(), yearlySummary);
+            trainerSummaryEntity.setSummaryList(allSummary);
 
-            trainerSummaryEntity.setActive(Boolean.valueOf(map.get("active")));
+            trainerSummaryEntity.setActive(Boolean.valueOf(payloadmap.get("active")));
             trainerSummaryRepository.save(trainerSummaryEntity);
         } else {
-            Map<String, Map<String, Number>> map1 = trainerSummaryEntity1.getSummaryList();
-            if (map1.containsKey(year.toString())) {
-                Map<String, Number> map2 = map1.get(year.toString());
-                if (map2.containsKey(month.toString())) {
-                    map2.put(month.toString(), ((Integer.valueOf(map.get("duration"))) + (Integer) map2.get(month.toString())));
+            Map<String,YearlySummary> allSummary = trainerSummaryEntityExisting.getSummaryList();
+            if (allSummary.containsKey(year.toString())) {
+                Map<String, Number> monthlySummary = allSummary.get(year.toString()).getMonthlySummary();
+                if (monthlySummary.containsKey(month.toString())) {
+                    monthlySummary.put(month.toString(), ((Integer.valueOf(payloadmap.get("duration"))) + (Integer) monthlySummary.get(month.toString())));
                 } else {
-                    map2.put(month.toString(), (Integer.valueOf(map.get("duration"))));
+                    monthlySummary.put(month.toString(), (Integer.valueOf(payloadmap.get("duration"))));
 
                 }
             } else {
-                Map<String, Number> map2 = new HashMap<>();
-                map2.put(month.toString(), (Integer.valueOf(map.get("duration"))));
-                map1.put(year.toString(), map2);
-                trainerSummaryEntity1.setSummaryList(map1);
+                Map<String, Number> monthlySummary = new HashMap<>();
+                monthlySummary.put(month.toString(), (Integer.valueOf(payloadmap.get("duration"))));
+                YearlySummary yearlySummary =new YearlySummary();
+                yearlySummary.setMonthlySummary(monthlySummary);
+                allSummary.put(year.toString(), yearlySummary);
+                trainerSummaryEntityExisting.setSummaryList(allSummary);
             }
-            trainerSummaryRepository.save(trainerSummaryEntity1);
+            trainerSummaryRepository.save(trainerSummaryEntityExisting);
         }
     }
 
@@ -77,8 +81,8 @@ public class TrainerSummaryService {
         responseDto.setFirstname(trainerSummaryEntity.getFirstname());
         responseDto.setLastname(trainerSummaryEntity.getLastname());
         responseDto.setTrainerStatus(trainerSummaryEntity.getActive());
-        Map<String, Map<String, Number>> map = trainerSummaryEntity.getSummaryList();
-        responseDto.setMap(map);
+        Map<String, YearlySummary> allSummary = trainerSummaryEntity.getSummaryList();
+        responseDto.setMap(allSummary);
         return responseDto;
     }
 

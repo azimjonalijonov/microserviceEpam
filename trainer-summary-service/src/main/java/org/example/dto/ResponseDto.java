@@ -1,7 +1,9 @@
 package org.example.dto;
 
-import org.example.dto.PartialDTO;
 
+import org.example.entity.YearlySummary;
+
+import java.time.Year;
 import java.util.List;
 import java.util.Map;
 
@@ -47,15 +49,15 @@ public class ResponseDto {
     private Boolean trainerStatus = false;
 
 
-    public Map<String, Map<String, Number>> getMap() {
+    public Map<String, YearlySummary> getMap() {
         return map;
     }
 
-    public void setMap(Map<String, Map<String, Number>> map) {
+    public void setMap(Map<String, YearlySummary> map) {
         this.map = map;
     }
 
-    Map<String, Map<String, Number>> map;
+    Map<String, YearlySummary> map;
 
 
 }

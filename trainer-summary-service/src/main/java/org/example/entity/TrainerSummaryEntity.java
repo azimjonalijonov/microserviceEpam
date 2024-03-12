@@ -20,15 +20,15 @@ public class TrainerSummaryEntity {
     private String lastname;
     private Boolean isActive;
 
-    public Map<String, Map<String, Number>> getSummaryList() {
+    public Map<String, YearlySummary> getSummaryList() {
         return summaryList;
     }
 
-    public void setSummaryList(Map<String, Map<String, Number>> summaryList) {
+    public void setSummaryList(Map<String, YearlySummary> summaryList) {
         this.summaryList = summaryList;
     }
 
-    Map<String, Map<String, Number>> summaryList;
+    Map<String, YearlySummary> summaryList;
 
 
     public String getUsername() {

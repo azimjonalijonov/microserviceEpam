@@ -1,7 +1,9 @@
 package org.example.service;
+
 import org.example.config.jwt.JwtService;
 import org.example.dto.ResponseDto;
 import org.example.entity.TrainerSummaryEntity;
+import org.example.entity.YearlySummary;
 import org.example.repository.TrainerSummaryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,10 +63,12 @@ public class TrainerSummaryServiceTest {
         map.put("active", "true");
 
         TrainerSummaryEntity existingSummary = new TrainerSummaryEntity();
-        Map<String, Map<String, Number>> summaryList = new HashMap<>();
+        Map<String, YearlySummary> summaryList = new HashMap<>();
         Map<String, Number> monthMap = new HashMap<>();
         monthMap.put("MARCH", 30);
-        summaryList.put("2024", monthMap);
+        YearlySummary yearlySummary = new YearlySummary();
+        yearlySummary.setMonthlySummary(monthMap);
+        summaryList.put("2024", yearlySummary);
         existingSummary.setSummaryList(summaryList);
         when(trainerSummaryRepository.findByUsername(any())).thenReturn(existingSummary);
 
@@ -80,7 +84,7 @@ public class TrainerSummaryServiceTest {
         trainerSummaryEntity.setFirstname("John");
         trainerSummaryEntity.setLastname("Doe");
         trainerSummaryEntity.setActive(true);
-        Map<String, Map<String, Number>> summaryList = new HashMap<>();
+        Map<String, YearlySummary> summaryList = new HashMap<>();
         trainerSummaryEntity.setSummaryList(summaryList);
 
         when(trainerSummaryRepository.findByUsername(any())).thenReturn(trainerSummaryEntity);
