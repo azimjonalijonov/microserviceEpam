@@ -1,6 +1,6 @@
 package org.example.service;
 
-import org.example.dto.RequestDTO;
+import org.example.config.jwt.JwtService;
 import org.example.dto.ResponseDto;
 import org.example.entity.TrainerSummaryEntity;
 import org.example.repository.TrainerSummaryRepository;
@@ -8,24 +8,24 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
 
 class TrainerSummaryServiceTest {
+
+    @Mock
+    private JwtService jwtService;
 
     @Mock
     private TrainerSummaryRepository trainerSummaryRepository;
 
     @InjectMocks
-
     private TrainerSummaryService trainerSummaryService;
 
     @BeforeEach
@@ -34,53 +34,48 @@ class TrainerSummaryServiceTest {
     }
 
     @Test
-    void listener() {
-        Map<String, String> map = new HashMap<>();
-        map.put("username", "testuser");
-        map.put("firstname", "John");
-        map.put("lastname", "Doe");
-        map.put("date", "2024-03-11T12:00:00.000");
-        map.put("active", "true");
-        map.put("duration", "60");
+    void listener_shouldSaveNewTrainerSummary() {
+        Map<String, String> map = Map.of(
+                "username", "testUser",
+                "firstname", "John",
+                "lastname", "Doe",
+                "date", "2023-03-12T10:15:30.123",
+                "active", "true",
+                "duration", "60"
+        );
+
+        when(trainerSummaryRepository.findByUsernameAndYearAndMonth(anyString(), anyString(), anyString())).thenReturn(null);
+
         trainerSummaryService.listener(map);
-        Mockito.verify(trainerSummaryRepository, Mockito.times(1)).save(Mockito.any(TrainerSummaryEntity.class));
+
+        verify(trainerSummaryRepository, times(1)).save(any(TrainerSummaryEntity.class));
     }
 
     @Test
-    void save() {
-        RequestDTO requestDTO = new RequestDTO();
-        requestDTO.setUsername("testuser");
-        requestDTO.setFirstname("John");
-        requestDTO.setLastname("Doe");
-        requestDTO.setDATE(LocalDateTime.of(2024, 3, 11, 12, 0));
-        requestDTO.setActive(true);
-        requestDTO.setDuration(60);
+    void get_shouldReturnResponseDto() throws Exception {
+        String username = "testUser";
 
-        trainerSummaryService.save(requestDTO);
-
-        Mockito.verify(trainerSummaryRepository, Mockito.times(1)).save(Mockito.any(TrainerSummaryEntity.class));
-    }
-
-    @Test
-    void get() {
-        List<TrainerSummaryEntity> list = new ArrayList<>();
+        List<TrainerSummaryEntity> mockEntities = new ArrayList<>();
         TrainerSummaryEntity entity = new TrainerSummaryEntity();
-        entity.setUsername("testuser");
+        entity.setUsername(username);
         entity.setFirstname("John");
         entity.setLastname("Doe");
+        entity.setYear("2023");
+        entity.setMonth("MARCH");
         entity.setActive(true);
-        entity.setDATE(LocalDateTime.of(2024, 3, 11, 12, 0));
         entity.setDuration(60);
-        list.add(entity);
+        mockEntities.add(entity);
 
-        Mockito.when(trainerSummaryRepository.findAllByUsername("testuser")).thenReturn(list);
+        when(trainerSummaryRepository.findAllByUsername(username)).thenReturn(mockEntities);
 
-        ResponseDto responseDto = trainerSummaryService.get("testuser");
+        ResponseDto responseDto = trainerSummaryService.get(username);
 
-        assertEquals("testuser", responseDto.getUsername());
+        assertEquals(username, responseDto.getUsername());
         assertEquals("John", responseDto.getFirstname());
         assertEquals("Doe", responseDto.getLastname());
-        assertEquals(true, responseDto.getTrainerStatus());
-        assertEquals(1, responseDto.getMap().size());
+        assertEquals(1, responseDto.getPartialDTOS().size());
+        assertEquals("2023", responseDto.getPartialDTOS().get(0).getYear());
+        assertEquals("MARCH", responseDto.getPartialDTOS().get(0).getMonth());
+        assertEquals(60, responseDto.getPartialDTOS().get(0).getSummaryDuration());
     }
 }

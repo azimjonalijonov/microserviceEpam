@@ -19,15 +19,8 @@ public class TrainerSummaryController {
         this.trainerSummaryService = trainerSummaryService;
     }
 
-    @PostMapping("/post")
-    public ResponseEntity<?> post(@RequestBody RequestDTO requestDTO) {
-        trainerSummaryService.save(requestDTO);
-        return ResponseEntity.ok("Sucessfully submiitted to second service");
-
-    }
-
     @GetMapping("/get")
-    public ResponseEntity<?> get(@RequestParam String username) {
+    public ResponseEntity<?> get(@RequestParam String username) throws Exception {
         return ResponseEntity.ok(trainerSummaryService.get(username));
     }
 

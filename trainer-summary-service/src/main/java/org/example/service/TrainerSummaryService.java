@@ -7,10 +7,12 @@ import org.example.dto.RequestDTO;
 import org.example.dto.ResponseDto;
 import org.example.entity.TrainerSummaryEntity;
 import org.springframework.jms.annotation.JmsListener;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,133 +32,54 @@ public class TrainerSummaryService {
     @JmsListener(destination = "dest")
 
     public void listener(Map<String, String> map) {
-        TrainerSummaryEntity trainerSummaryEntity = new TrainerSummaryEntity();
-        trainerSummaryEntity.setUsername((String) map.get("username"));
-        trainerSummaryEntity.setFirstname((String) map.get("firstname"));
-        trainerSummaryEntity.setLastname((String) map.get("lastname"));
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
-        // Parse the string to LocalDateTime
         LocalDateTime dateTime = LocalDateTime.parse(map.get("date"), formatter);
-        trainerSummaryEntity.setDATE(dateTime);
-        trainerSummaryEntity.setActive(Boolean.valueOf(map.get("active")));
-        trainerSummaryEntity.setDuration((Integer.valueOf(map.get("duration"))));
+        Month month = dateTime.getMonth();
+        Year year = Year.of(dateTime.getYear());
+        TrainerSummaryEntity trainerSummaryEntity1 = trainerSummaryRepository.findByUsernameAndYearAndMonth(map.get("username"), year.toString(), month.toString());
+        if (trainerSummaryEntity1 == null) {
 
-        trainerSummaryRepository.save(trainerSummaryEntity);
+
+            TrainerSummaryEntity trainerSummaryEntity = new TrainerSummaryEntity();
+            trainerSummaryEntity.setUsername((String) map.get("username"));
+            trainerSummaryEntity.setFirstname((String) map.get("firstname"));
+            trainerSummaryEntity.setLastname((String) map.get("lastname"));
+
+            trainerSummaryEntity.setYear(year.toString());
+            trainerSummaryEntity.setMonth(month.toString());
+
+            trainerSummaryEntity.setActive(Boolean.valueOf(map.get("active")));
+            trainerSummaryEntity.setDuration((Integer.valueOf(map.get("duration"))));
+
+            trainerSummaryRepository.save(trainerSummaryEntity);
+        } else {
+            trainerSummaryEntity1.setDuration((Integer.valueOf(map.get("duration"))) + (Integer) trainerSummaryEntity1.getDuration());
+            trainerSummaryRepository.save(trainerSummaryEntity1);
+        }
     }
 
-    public void save(RequestDTO requestDTO) {
-        TrainerSummaryEntity trainerSummaryEntity = new TrainerSummaryEntity();
-        trainerSummaryEntity.setUsername(requestDTO.getUsername());
-        trainerSummaryEntity.setFirstname(requestDTO.getFirstname());
-        trainerSummaryEntity.setLastname(requestDTO.getLastname());
-        trainerSummaryEntity.setDATE(requestDTO.getDATE());
-        trainerSummaryEntity.setActive(requestDTO.getActive());
-        trainerSummaryEntity.setDuration(requestDTO.getDuration());
-        trainerSummaryRepository.save(trainerSummaryEntity);
-    }
 
-    public ResponseDto get(String username) {
+    public ResponseDto get(String username) throws Exception {
+
         List<TrainerSummaryEntity> list = trainerSummaryRepository.findAllByUsername(username);
+        if (list.size() == 0) {
+            throw new Exception("no  trainerSummary found for this username");
+        }
         ResponseDto responseDto = new ResponseDto();
         responseDto.setUsername(list.get(0).getUsername());
         responseDto.setFirstname(list.get(0).getFirstname());
         responseDto.setLastname(list.get(0).getLastname());
         responseDto.setTrainerStatus(list.get(0).getActive());
-        Map<Long, List<PartialDTO>> listMap = new HashMap<>();
-        responseDto.setMap(listMap);
-
+        List<PartialDTO> list1 = new ArrayList<>();
         for (TrainerSummaryEntity trainerSummaryEntity : list
         ) {
-            Long year = (long) trainerSummaryEntity.getDATE().getYear();
-            if (responseDto.getMap().containsKey(year)) {
-                Month month = trainerSummaryEntity.getDATE().getMonth();
-                System.out.println(month + "_______________________");
-                System.out.println(Month.MAY);
-                for (PartialDTO partialDTO : responseDto.getMap().get(year)) {
-                    if (partialDTO.getMonth().equals(month)) {
-                        partialDTO.setSummaryDuration(trainerSummaryEntity.getDuration().doubleValue() + partialDTO.getSummaryDuration().doubleValue());
-                    }
-                }
-            } else {
-                List<PartialDTO> partialDTOS = new ArrayList<>();
-                PartialDTO partialDTO1 = new PartialDTO();
-
-                partialDTO1.setMonth(Month.JANUARY);
-                if (trainerSummaryEntity.getDATE().getMonth().equals(Month.JANUARY)) {
-                    partialDTO1.setSummaryDuration(trainerSummaryEntity.getDuration());
-                }
-                PartialDTO partialDTO2 = new PartialDTO();
-                partialDTO2.setMonth(Month.FEBRUARY);
-                if (trainerSummaryEntity.getDATE().getMonth().equals(Month.FEBRUARY)) {
-                    partialDTO2.setSummaryDuration(trainerSummaryEntity.getDuration());
-                }
-                PartialDTO partialDTO3 = new PartialDTO();
-                partialDTO3.setMonth(Month.MARCH);
-                if (trainerSummaryEntity.getDATE().getMonth().equals(Month.MARCH)) {
-                    partialDTO3.setSummaryDuration(trainerSummaryEntity.getDuration());
-                }
-                PartialDTO partialDTO4 = new PartialDTO();
-                partialDTO4.setMonth(Month.APRIL);
-                if (trainerSummaryEntity.getDATE().getMonth().equals(Month.APRIL)) {
-                    partialDTO4.setSummaryDuration(trainerSummaryEntity.getDuration());
-                }
-                PartialDTO partialDTO5 = new PartialDTO();
-                partialDTO5.setMonth(Month.MAY);
-                if (trainerSummaryEntity.getDATE().getMonth().equals(Month.MAY)) {
-                    partialDTO5.setSummaryDuration(trainerSummaryEntity.getDuration());
-                }
-                PartialDTO partialDTO6 = new PartialDTO();
-                partialDTO6.setMonth(Month.JUNE);
-                if (trainerSummaryEntity.getDATE().getMonth().equals(Month.JUNE)) {
-                    partialDTO6.setSummaryDuration(trainerSummaryEntity.getDuration());
-                }
-                PartialDTO partialDTO7 = new PartialDTO();
-                partialDTO7.setMonth(Month.JULY);
-                if (trainerSummaryEntity.getDATE().getMonth().equals(Month.JULY)) {
-                    partialDTO7.setSummaryDuration(trainerSummaryEntity.getDuration());
-                }
-                PartialDTO partialDTO8 = new PartialDTO();
-                partialDTO8.setMonth(Month.AUGUST);
-                if (trainerSummaryEntity.getDATE().getMonth().equals(Month.AUGUST)) {
-                    partialDTO8.setSummaryDuration(trainerSummaryEntity.getDuration());
-                }
-                PartialDTO partialDTO9 = new PartialDTO();
-                partialDTO9.setMonth(Month.SEPTEMBER);
-                if (trainerSummaryEntity.getDATE().getMonth().equals(Month.SEPTEMBER)) {
-                    partialDTO9.setSummaryDuration(trainerSummaryEntity.getDuration());
-                }
-                PartialDTO partialDTO10 = new PartialDTO();
-                partialDTO10.setMonth(Month.OCTOBER);
-                if (trainerSummaryEntity.getDATE().getMonth().equals(Month.OCTOBER)) {
-                    partialDTO10.setSummaryDuration(trainerSummaryEntity.getDuration());
-                }
-                PartialDTO partialDTO11 = new PartialDTO();
-                partialDTO11.setMonth(Month.NOVEMBER);
-                if (trainerSummaryEntity.getDATE().getMonth().equals(Month.NOVEMBER)) {
-                    partialDTO11.setSummaryDuration(trainerSummaryEntity.getDuration());
-                }
-                PartialDTO partialDTO12 = new PartialDTO();
-                partialDTO12.setMonth(Month.DECEMBER);
-                if (trainerSummaryEntity.getDATE().getMonth().equals(Month.DECEMBER)) {
-                    partialDTO12.setSummaryDuration(trainerSummaryEntity.getDuration());
-                }
-                partialDTOS.add(partialDTO1);
-                partialDTOS.add(partialDTO2);
-                partialDTOS.add(partialDTO3);
-                partialDTOS.add(partialDTO4);
-                partialDTOS.add(partialDTO5);
-                partialDTOS.add(partialDTO6);
-                partialDTOS.add(partialDTO7);
-                partialDTOS.add(partialDTO8);
-                partialDTOS.add(partialDTO9);
-                partialDTOS.add(partialDTO10);
-                partialDTOS.add(partialDTO11);
-                partialDTOS.add(partialDTO12);
-
-
-                responseDto.getMap().put(year, partialDTOS);
-            }
+            PartialDTO partialDTO = new PartialDTO();
+            partialDTO.setYear(trainerSummaryEntity.getYear());
+            partialDTO.setMonth(trainerSummaryEntity.getMonth());
+            partialDTO.setSummaryDuration(trainerSummaryEntity.getDuration());
+            list1.add(partialDTO);
         }
+        responseDto.setPartialDTOS(list1);
         return responseDto;
     }
 

@@ -1,16 +1,28 @@
 package org.example.dto;
 
+import javax.xml.transform.sax.SAXResult;
 import java.time.Month;
+import java.time.Year;
 import java.util.Map;
 
 public class PartialDTO {
-    private Month month;
+    private String year;
 
-    public Month getMonth() {
+    public String getYear() {
+        return year;
+    }
+
+    public void setYear(String year) {
+        this.year = year;
+    }
+
+    private String month;
+
+    public String getMonth() {
         return month;
     }
 
-    public void setMonth(Month month) {
+    public void setMonth(String month) {
         this.month = month;
     }
 

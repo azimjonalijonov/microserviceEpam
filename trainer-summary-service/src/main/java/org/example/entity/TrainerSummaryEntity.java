@@ -2,26 +2,40 @@ package org.example.entity;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.IndexDirection;
-import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
-
 @Document
+@CompoundIndexes({
+        @CompoundIndex(name = "trainer_name_index", def = "{'firstName': 1, 'lastName': 1}")
+})
 public class TrainerSummaryEntity {
     @Id
     private ObjectId id;
     private String username;
-    @Indexed(direction = IndexDirection.ASCENDING)
-
     private String firstname;
-    @Indexed(direction = IndexDirection.ASCENDING)
-
     private String lastname;
     private Boolean isActive;
-    private LocalDateTime DATE;
+    private String year;
+    private String month;
+
     private Number duration;
+    public void setYear(String year) {
+        this.year = year;
+    }
+
+    public String getYear() {
+        return year;
+    }
+
+    public String getMonth() {
+        return month;
+    }
+
+    public void setMonth(String month) {
+        this.month = month;
+    }
 
     public Number getDuration() {
         return duration;
@@ -64,13 +78,6 @@ public class TrainerSummaryEntity {
         isActive = active;
     }
 
-    public LocalDateTime getDATE() {
-        return DATE;
-    }
-
-    public void setDATE(LocalDateTime DATE) {
-        this.DATE = DATE;
-    }
 
     public void setId(ObjectId id) {
         this.id = id;

@@ -63,6 +63,7 @@ public class TrainingService {
     @CircuitBreaker(name = "serviceA", fallbackMethod = "fallback")
 
     public ResponseEntity createTrainerSummary(Training training, Boolean bool, String method) {
+
         Map<String, String> map = new HashMap<>();
         map.put("username", training.getTrainer().getUser().getUsername());
         map.put("firstname", training.getTrainer().getUser().getFirstName());
