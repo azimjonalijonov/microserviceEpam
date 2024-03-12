@@ -1,21 +1,23 @@
 package org.example.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import org.bson.types.ObjectId;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.IndexDirection;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Entity
-
+@Document
 public class TrainerSummaryEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private ObjectId id;
     private String username;
+    @Indexed(direction = IndexDirection.ASCENDING)
+
     private String firstname;
+    @Indexed(direction = IndexDirection.ASCENDING)
+
     private String lastname;
     private Boolean isActive;
     private LocalDateTime DATE;
@@ -36,6 +38,7 @@ public class TrainerSummaryEntity {
     public void setUsername(String username) {
         this.username = username;
     }
+
 
     public String getFirstname() {
         return firstname;
@@ -69,11 +72,11 @@ public class TrainerSummaryEntity {
         this.DATE = DATE;
     }
 
-    public void setId(Long id) {
+    public void setId(ObjectId id) {
         this.id = id;
     }
 
-    public Long getId() {
+    public ObjectId getId() {
         return id;
     }
 }
