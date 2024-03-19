@@ -75,28 +75,22 @@ public class TraineeController {
 	}
 
 	@GetMapping("/get")
-	public ResponseEntity get(@RequestParam String username, String password) {
+	public ResponseEntity get(@RequestParam String username) {
 		if (userService.readByUsername(username) == null) {
 			throw new RuntimeException("user does not exist");
 		}
 		User user = userService.readByUsername(username);
-		if (!user.getPassword().equals(password)) {
-			throw new RuntimeException("wrong password");
-		}
-		String response = traineeService.readByUsername(username).toString();
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		Trainee trainee= traineeService.readByUsername(username);
+		return new ResponseEntity<>(trainee, HttpStatus.OK);
 	}
 
 	@PutMapping("/update")
-	public ResponseEntity<?> update(@RequestParam String username, String password,
+	public ResponseEntity<?> update(@RequestParam String username,
 			@RequestBody UpdateTraineeDTO updateTraineeDTO) {
 		if (userService.readByUsername(username) == null) {
 			throw new RuntimeException("user does not exist");
 		}
 		User user = userService.readByUsername(username);
-		if (!user.getPassword().equals(password)) {
-			throw new RuntimeException("wrong password");
-		}
 
 		if (updateTraineeDTO.getFirstname() == null || updateTraineeDTO.getLastname() == null
 				|| updateTraineeDTO.getUsername() == null) {
@@ -126,14 +120,11 @@ public class TraineeController {
 	}
 
 	@DeleteMapping("/delete")
-	public ResponseEntity delete(@RequestParam String username, String password) {
+	public ResponseEntity delete(@RequestParam String username) {
 		if (userService.readByUsername(username) == null) {
 			throw new RuntimeException("user does not exist");
 		}
 		User user = userService.readByUsername(username);
-		if (!user.getPassword().equals(password)) {
-			throw new RuntimeException("wrong password");
-		}
 		traineeService.deleteByUsername(username);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

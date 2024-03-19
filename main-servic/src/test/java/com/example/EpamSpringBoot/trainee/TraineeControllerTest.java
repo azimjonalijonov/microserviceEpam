@@ -74,7 +74,7 @@ class TraineeControllerTest {
 		trainee.setUser(user);
 		when(userService.readByUsername(username)).thenReturn(user);
 		when(traineeService.readByUsername(username)).thenReturn(trainee);
-		ResponseEntity responseEntity = traineeController.get(username, password);
+		ResponseEntity responseEntity = traineeController.get(username);
 		assertNotNull(responseEntity);
 		assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 	}
@@ -97,7 +97,7 @@ class TraineeControllerTest {
 		when(traineeService.readByUsername(username)).thenReturn(trainee);
 		when(traineeService.update(any())).thenReturn(trainee);
 		when(traineeService.getTraineeTrainingList(any(), any())).thenReturn(new ArrayList<>());
-		ResponseEntity responseEntity = traineeController.update(username, password, updateTraineeDTO);
+		ResponseEntity responseEntity = traineeController.update(username, updateTraineeDTO);
 		assertNotNull(responseEntity);
 		assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 	}
@@ -113,7 +113,7 @@ class TraineeControllerTest {
 		trainee.setUser(user);
 		when(userService.readByUsername(username)).thenReturn(user);
 		doNothing().when(traineeService).deleteByUsername(username);
-		ResponseEntity responseEntity = traineeController.delete(username, password);
+		ResponseEntity responseEntity = traineeController.delete(username);
 		assertNotNull(responseEntity);
 		assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 	}

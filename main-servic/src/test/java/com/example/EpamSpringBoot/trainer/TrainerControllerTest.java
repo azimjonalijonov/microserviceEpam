@@ -60,7 +60,7 @@ class TrainerControllerTest {
 		when(userService.readByUsername(username)).thenReturn(user);
 		when(trainerService.readByUsername(username)).thenReturn(new Trainer());
 
-		ResponseEntity responseEntity = trainerController.get(username, password);
+		ResponseEntity responseEntity = trainerController.get(username);
 
 		assertNotNull(responseEntity);
 		assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
@@ -100,7 +100,7 @@ class TrainerControllerTest {
 		when(userService.readByUsername(username)).thenReturn(user);
 		when(trainerService.getSpecificTrainers()).thenReturn(new ArrayList<>());
 
-		ResponseEntity responseEntity = trainerController.getSpecial(username, password);
+		ResponseEntity responseEntity = trainerController.getSpecial();
 
 		assertNotNull(responseEntity);
 		assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
@@ -121,7 +121,7 @@ class TrainerControllerTest {
 		when(userService.readByUsername(username)).thenReturn(user);
 		when(trainerService.readByUsername(username)).thenReturn(trainer);
 
-		ResponseEntity responseEntity = trainerController.changeStatus(username, password, bool);
+		ResponseEntity responseEntity = trainerController.changeStatus(username, bool);
 
 		assertNotNull(responseEntity);
 		assertEquals(HttpStatus.OK, responseEntity.getStatusCode());

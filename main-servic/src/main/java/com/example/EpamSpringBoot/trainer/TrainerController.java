@@ -75,14 +75,11 @@ public class TrainerController {
 	}
 
 	@GetMapping("/get")
-	public ResponseEntity get(@RequestParam String username, String password) {
+	public ResponseEntity get(@RequestParam String username) {
 		if (userService.readByUsername(username) == null) {
 			throw new RuntimeException("user does not exist");
 		}
 		User user = userService.readByUsername(username);
-		if (!user.getPassword().equals(password)) {
-			throw new RuntimeException("wrong password");
-		}
 		String response = trainerService.readByUsername(username).toString();
 		Map<String, String> map = new HashMap<>();
 		map.put("success", response);
@@ -92,13 +89,6 @@ public class TrainerController {
 	@PutMapping("/update")
 	public ResponseEntity update(@RequestParam String username, String password,
 			@RequestBody UpdateTrainerDTO updateTrainerDTO) {
-		// if (userService.readByUsername(username) == null) {
-		// throw new RuntimeException("user does not exist");
-		// }
-		// User user = userService.readByUsername(username);
-		// if (!user.getPassword().equals(password)) {
-		// throw new RuntimeException("wrong password");
-		// }
 		User user1 = userService.readByUsername(updateTrainerDTO.getUsername());
 		user1.setActive(updateTrainerDTO.getActive());
 		user1.setLastName(updateTrainerDTO.getLastname());
@@ -114,27 +104,19 @@ public class TrainerController {
 	}
 
 	@GetMapping("/getspecial")
-	public ResponseEntity getSpecial(@RequestParam String username, String password) {
-		if (userService.readByUsername(username) == null) {
-			throw new RuntimeException("user does not exist");
-		}
-		User user = userService.readByUsername(username);
-		if (!user.getPassword().equals(password)) {
-			throw new RuntimeException("wrong password");
-		}
+	public ResponseEntity getSpecial() {
+
 		List<Trainer> trainerList = trainerService.getSpecificTrainers();
 		return ResponseEntity.ok(trainerList);
 	}
 
-	@PatchMapping("/activateDeacivate")
-	public ResponseEntity changeStatus(@RequestParam String username, String password, Boolean bool) {
+	@PutMapping("/activateDeacivate")
+	public ResponseEntity changeStatus(@RequestParam String username,  Boolean bool) {
 		if (userService.readByUsername(username) == null) {
 			throw new RuntimeException("user does not exist");
 		}
 		User user = userService.readByUsername(username);
-		if (!user.getPassword().equals(password)) {
-			throw new RuntimeException("wrong password");
-		}
+
 		Long id = trainerService.readByUsername(username).getId();
 		trainerService.changeActivation(bool, id);
 		Map<String, String> map = new HashMap<>();

@@ -1,5 +1,6 @@
 package com.example.EpamSpringBoot.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -19,6 +20,8 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "usr")
+@JsonIgnoreProperties(ignoreUnknown = true)
+
 public class User implements UserDetails {
 
 	@Id
