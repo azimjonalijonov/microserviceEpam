@@ -7,5 +7,5 @@ Feature: User Login
 
   Scenario: User does not exist
     Given no user with username "nonexistentuser"
-    When the user tries to login with username "nonexistentuser" and password "password"
+    When the user tries to login with wrongusername "nonexistentuser" and password "password"
     Then the user should receive an error message indicating the account does not exist
